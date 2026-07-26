@@ -57,12 +57,6 @@
 
   /* ── Hero ─────────────────────────────────────────────────────────── */
   .hero { position: relative; padding: 72px 0 40px; }
-  .hero::after {
-    content: ""; position: absolute; z-index: 0;
-    right: -6%; top: 4%; width: 620px; height: 620px; max-width: 90vw;
-    background: radial-gradient(closest-side, rgba(95,212,196,.13), rgba(138,180,255,.09) 45%, transparent 72%);
-    pointer-events: none;
-  }
   .hero-grid {
     position: relative; z-index: 1;
     display: grid; gap: 56px; align-items: center;
@@ -75,11 +69,18 @@
   .kicker b { color: var(--credits); font-weight: 600; }
   h1 {
     margin: 0 0 20px;
-    font-size: clamp(29px, 4.6vw, 56px); line-height: 1.06; font-weight: 800; letter-spacing: -1.2px;
+    font-size: clamp(29px, 4.4vw, 52px); line-height: 1.08; font-weight: 800; letter-spacing: -1.2px;
     overflow-wrap: break-word;
+    /* Keeps the last line from being a single orphaned word. */
+    text-wrap: balance;
   }
   h1 em { font-style: normal; color: var(--session); }
-  .lede { margin: 0 0 30px; max-width: min(46ch, 100%); font-size: clamp(15.5px, 1.5vw, 17.5px); color: var(--muted); }
+  .lede {
+    margin: 0 0 30px; max-width: min(46ch, 100%);
+    font-size: clamp(15.5px, 1.5vw, 17.5px); color: var(--muted);
+    text-wrap: pretty;
+  }
+  p, .row dd, .lane p, .readout p { text-wrap: pretty; }
   /* Grid and flex children default to min-content width, which lets long text
      push past the viewport instead of wrapping. */
   .hero-grid > *, .deck-col > * { min-width: 0; max-width: 100%; }
@@ -105,14 +106,26 @@
 
   /* ── The deck ─────────────────────────────────────────────────────── */
   .deck-col { display: flex; flex-direction: column; align-items: center; }
+  /* Matte black body, keys recessed into wells — closer to how an MK.2 reads
+     than a lit gradient panel. */
   .deck {
-    display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px;
-    padding: 15px; border-radius: 20px;
-    background: linear-gradient(165deg, #26262f, #131318 55%, #0c0c10);
-    border: 1px solid #2e2e3a;
-    box-shadow: 0 30px 70px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.07);
+    position: relative;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    padding: 14px 14px 24px; border-radius: 15px;
+    background: #141418;
+    border: 1px solid #2b2b34;
+    box-shadow:
+      0 26px 60px rgba(0,0,0,.7),
+      inset 0 1px 0 rgba(255,255,255,.045),
+      inset 0 -14px 26px rgba(0,0,0,.45);
   }
-  .cell { width: 78px; height: 78px; border-radius: 11px; }
+  /* Neutral notch on the chin — reads as hardware without borrowing a logo. */
+  .deck::after {
+    content: ""; position: absolute; left: 50%; bottom: 9px;
+    width: 30px; height: 3px; border-radius: 2px;
+    background: #2c2c36; transform: translateX(-50%);
+  }
+  .cell { width: 78px; height: 78px; border-radius: 10px; }
   @media (max-width: 1040px) { .cell { width: 66px; height: 66px; } }
   /* Five cells plus gaps and bezel have to clear a 360px viewport. */
   @media (max-width: 560px) {
@@ -121,15 +134,18 @@
     button.cell svg { border-radius: 9px; }
   }
   .cell.blank {
-    background: linear-gradient(180deg, #17171e, #0e0e13);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+    background: #0a0a0d;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.85), inset 0 -1px 0 rgba(255,255,255,.025);
   }
   button.cell {
     padding: 0; border: 0; cursor: pointer; background: none;
     outline-offset: 3px;
     transition: transform .16s ease, filter .16s ease;
   }
-  button.cell svg { display: block; width: 100%; height: 100%; border-radius: 11px; }
+  button.cell svg {
+    display: block; width: 100%; height: 100%; border-radius: 10px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 1px 3px rgba(0,0,0,.7);
+  }
   button.cell:hover, button.cell:focus-visible { transform: translateY(-3px); filter: brightness(1.12); }
   button.cell[aria-pressed="true"] { transform: translateY(-3px); }
   button.cell[aria-pressed="true"] svg { box-shadow: 0 0 0 2px var(--accent); }
@@ -142,8 +158,10 @@
   .k-track { fill: var(--track); }
   .k-foot { font-size: 19px; font-weight: 600; fill: var(--foot); }
 
+  /* Fixed height: the descriptions differ in length, and letting the box grow
+     made it jump every time the pointer crossed a key. */
   .readout {
-    margin-top: 22px; width: 100%; max-width: 470px; min-height: 92px;
+    margin-top: 22px; width: 100%; max-width: 470px; min-height: 152px;
     border: 1px solid var(--line); border-left: 3px solid var(--accent, var(--line));
     border-radius: 12px; padding: 15px 18px;
     background: rgba(255,255,255,.018);
@@ -226,11 +244,11 @@
   <div class="wrap hero-grid">
     <div>
       <p class="kicker">Stream Deck plugin · <b>MIT</b> · one dependency</p>
-      <h1>Your Claude limits,<br>on a key you can <em>press</em>.</h1>
+      <h1>Stop guessing how much <em>Claude</em> you have left.</h1>
       <p class="lede">
-        The 5-hour window, the weekly cap, the Fable budget, your credits, and
-        what today's tokens would have cost — <strong>without opening a terminal
-        to type <span class="mono">/usage</span></strong>.
+        The 5-hour window, the weekly cap, the Fable budget, your credits, and what
+        today's tokens would have cost — <strong>five keys, refreshed every
+        minute</strong>, so you never&nbsp;type <span class="mono">/usage</span>&nbsp;again.
       </p>
       <div class="cta">
         <a class="btn btn-primary" href="https://github.com/karolpolikarp/claude-limits-streamdeck">Get it on GitHub</a>
@@ -354,23 +372,23 @@ cp -R com.karolp.claudelimits.sdPlugin \
   var KEYS = [
     { id: "session", label: "SESSION", accent: "var(--session)", pct: 43, resetMin: 155,
       title: "Session — the rolling 5 hours",
-      body: "The window that actually bites during a long working session. The bottom line is the time left until it resets.",
+      body: "The window that bites during a long working session. The bottom line counts down to the reset.",
       src: "five_hour.utilization" },
     { id: "week", label: "WEEK", accent: "var(--week)", pct: 61, resetMin: 5760,
       title: "Week — every model together",
-      body: "The weekly cap across all models, so you can see a heavy Monday coming for the rest of the week.",
+      body: "The weekly cap across every model, so a heavy Monday shows up before it costs you on Friday.",
       src: "seven_day.utilization" },
     { id: "fable", label: "FABLE", accent: "var(--fable)", pct: 12, resetMin: 5760,
       title: "Fable — the premium budget",
-      body: "The model-scoped weekly window gets its own dial, because that is the one you ration.",
+      body: "The model-scoped weekly window gets its own dial, because that is the budget you actually ration.",
       src: 'limits[] where scope.model.display_name = "Fable"' },
     { id: "credits", label: "CREDITS", accent: "var(--credits)", pct: 28, foot: "31.40/112 €",
       title: "Credits — spend against the cap",
-      body: "Usage-credit spend in your own currency. The caption greys out when credits are switched off, so the balance is still readable.",
+      body: "Usage-credit spend in your own currency. The caption greys out when credits are off, so the balance stays readable.",
       src: "spend, falling back to extra_usage" },
     { id: "cost", label: "COST TODAY", accent: "var(--cost)", stat: "$47.20", foot: "61.4M tok",
       title: "Cost today — the notional bill",
-      body: "Today's tokens priced at API list rates, cache writes and reads counted separately. Nothing is billed on a subscription; it is a measure of effort.",
+      body: "Today's tokens at API list rates, cache writes and reads counted separately. Nothing is billed on a subscription.",
       src: "~/.claude/projects/**/*.jsonl" }
   ];
 
