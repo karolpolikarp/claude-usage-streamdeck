@@ -1,0 +1,10 @@
+node_modules/
+
+# Written by the plugin at runtime; contains your own usage figures.
+plugin.log
+
+# Generated artwork rendered from live account data.
+preview/
+
+# Local Claude Code settings.
+.claude/

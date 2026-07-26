@@ -1,0 +1,100 @@
+{
+	"Name": "Claude Limits",
+	"Author": "karol",
+	"Version": "1.2.1.0",
+	"SDKVersion": 2,
+	"CodePath": "bin/plugin.js",
+	"Nodejs": {
+		"Version": "20"
+	},
+	"Icon": "imgs/plugin/icon",
+	"CategoryIcon": "imgs/plugin/category",
+	"Category": "Claude",
+	"Description": "Live Claude usage limits on your keys: 5h session, weekly, and Fable weekly window.",
+	"URL": "https://claude.com/claude-code",
+	"OS": [
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		},
+		{
+			"Platform": "mac",
+			"MinimumVersion": "10.15"
+		}
+	],
+	"Software": {
+		"MinimumVersion": "6.5"
+	},
+	"Actions": [
+		{
+			"Name": "Session (5h)",
+			"UUID": "com.karolp.claudelimits.session",
+			"Icon": "imgs/actions/session",
+			"Tooltip": "Claude 5-hour session limit usage. Press to refresh.",
+			"Controllers": ["Keypad"],
+			"SupportedInMultiActions": false,
+			"States": [
+				{
+					"Image": "imgs/actions/session-key",
+					"ShowTitle": false
+				}
+			]
+		},
+		{
+			"Name": "Week (all models)",
+			"UUID": "com.karolp.claudelimits.week",
+			"Icon": "imgs/actions/week",
+			"Tooltip": "Claude weekly limit usage. Press to refresh.",
+			"Controllers": ["Keypad"],
+			"SupportedInMultiActions": false,
+			"States": [
+				{
+					"Image": "imgs/actions/week-key",
+					"ShowTitle": false
+				}
+			]
+		},
+		{
+			"Name": "Fable (weekly)",
+			"UUID": "com.karolp.claudelimits.fable",
+			"Icon": "imgs/actions/fable",
+			"Tooltip": "Claude weekly Fable model limit usage. Press to refresh.",
+			"Controllers": ["Keypad"],
+			"SupportedInMultiActions": false,
+			"States": [
+				{
+					"Image": "imgs/actions/fable-key",
+					"ShowTitle": false
+				}
+			]
+		},
+		{
+			"Name": "Usage credits",
+			"UUID": "com.karolp.claudelimits.credits",
+			"Icon": "imgs/actions/credits",
+			"Tooltip": "Usage-credit spend against the monthly cap. Press to refresh.",
+			"Controllers": ["Keypad"],
+			"SupportedInMultiActions": false,
+			"States": [
+				{
+					"Image": "imgs/actions/credits-key",
+					"ShowTitle": false
+				}
+			]
+		},
+		{
+			"Name": "Cost today",
+			"UUID": "com.karolp.claudelimits.cost",
+			"Icon": "imgs/actions/cost",
+			"Tooltip": "List-price value of today's Claude Code token usage. Press to rescan.",
+			"Controllers": ["Keypad"],
+			"SupportedInMultiActions": false,
+			"States": [
+				{
+					"Image": "imgs/actions/cost-key",
+					"ShowTitle": false
+				}
+			]
+		}
+	]
+}

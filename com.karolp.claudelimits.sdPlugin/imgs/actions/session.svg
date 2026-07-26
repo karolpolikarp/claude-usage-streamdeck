@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+  <circle cx="14" cy="14" r="10" fill="none" stroke="#4a4a55" stroke-width="3.5"/>
+  <circle cx="14" cy="14" r="10" fill="none" stroke="#8ab4ff" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="26 37" transform="rotate(-90 14 14)"/>
+</svg>
