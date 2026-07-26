@@ -1,9 +1,14 @@
 'use strict';
 
-// Renders the README banner from synthetic values, so the published image never
-// carries a real account's usage or spend. Writes docs/keys.html plus the five
-// SVGs it references; screenshot it with:
-//   msedge --headless=new --window-size=760,200 --screenshot=docs/keys.png docs/keys.html
+// Renders the readme and landing-page artwork from synthetic values, so nothing
+// published carries a real account's usage or spend. Writes docs/keys.html plus
+// the five SVGs it references.
+//
+// The rasters are a screenshot step, since there is no headless browser in the
+// dependency list:
+//   msedge --headless=new --window-size=760,180 --screenshot=docs/keys.png docs/keys.html
+//   msedge --headless=new --force-device-scale-factor=2 --window-size=144,144 \
+//     --screenshot=docs/png/<name>.png docs/key-<name>.svg      # once per key
 
 const fs = require('fs');
 const path = require('path');
