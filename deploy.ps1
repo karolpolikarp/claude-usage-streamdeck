@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Installs the Claude Limits plugin into Stream Deck and restarts the app.
+    Installs the Claude Usage plugin into Stream Deck and restarts the app.
 
 .DESCRIPTION
     Stream Deck only picks up plugin changes on restart, so this stops
