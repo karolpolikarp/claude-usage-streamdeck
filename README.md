@@ -8,6 +8,8 @@ what today's token usage would have cost at API list price.
 
 *(Values above are synthetic — the plugin renders your own.)*
 
+**[karolwilczynski.com/claude-limits-streamdeck](https://karolwilczynski.com/claude-limits-streamdeck/)**
+
 ## What each key shows
 
 | Key | Source | Meaning |
