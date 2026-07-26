@@ -15,256 +15,489 @@
 <meta name="twitter:card" content="summary_large_image">
 
 <style>
+  /* Palette and key geometry mirror bin/render.js — the plugin is the source
+     of truth; the keys below are a DOM copy so they can move and respond. */
   :root {
-    --bg: #0b0b0e;
-    --panel-a: #1e1e26;
-    --panel-b: #101015;
-    --line: #24242e;
+    --bg: #08080a;
+    --face-a: #1e1e26;
+    --face-b: #101015;
+    --line: #22222c;
+    --line-soft: #191921;
     --text: #f4f4f7;
     --muted: #9a9aa6;
+    --foot: #c6c6d2;
+    --track: #31313c;
     --session: #8ab4ff;
     --week: #c08cff;
     --fable: #ff9f6e;
     --credits: #5fd4c4;
     --cost: #f2c14e;
+    --ok: #3ddc84;
+    --warn: #ffc14d;
+    --mono: "Cascadia Code", ui-monospace, Consolas, "SF Mono", Menlo, monospace;
   }
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  /* The hero glow is wider than the viewport by design; clipping it here stops
+     it from creating a horizontal scrollbar on phones. */
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; overflow-x: hidden; }
   body {
     margin: 0;
+    overflow-x: hidden;
     background: var(--bg);
     color: var(--text);
-    font: 16px/1.65 "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font: 16px/1.6 "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,.035) 1px, transparent 0);
+    background-size: 26px 26px;
   }
   a { color: inherit; }
-  .wrap { max-width: 980px; margin: 0 auto; padding: 0 22px; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+  .mono { font-family: var(--mono); }
 
-  /* Hero -------------------------------------------------------------- */
-  .hero { padding: 88px 0 56px; text-align: center; position: relative; overflow: hidden; }
-  .hero::before {
-    content: "";
-    position: absolute; inset: -40% 20% auto 20%; height: 420px;
-    background: radial-gradient(closest-side, rgba(138,180,255,.16), transparent 70%);
+  /* ── Hero ─────────────────────────────────────────────────────────── */
+  .hero { position: relative; padding: 72px 0 40px; }
+  .hero::after {
+    content: ""; position: absolute; z-index: 0;
+    right: -6%; top: 4%; width: 620px; height: 620px; max-width: 90vw;
+    background: radial-gradient(closest-side, rgba(95,212,196,.13), rgba(138,180,255,.09) 45%, transparent 72%);
     pointer-events: none;
   }
-  .eyebrow {
-    position: relative;
-    display: inline-block;
-    font-size: 13px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase;
-    color: var(--muted);
-    border: 1px solid var(--line); border-radius: 999px;
-    padding: 6px 14px; margin-bottom: 22px;
+  .hero-grid {
+    position: relative; z-index: 1;
+    display: grid; gap: 56px; align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
+  .kicker {
+    font-family: var(--mono); font-size: 12.5px; color: var(--muted);
+    letter-spacing: .5px; margin: 0 0 20px;
+  }
+  .kicker b { color: var(--credits); font-weight: 600; }
   h1 {
-    position: relative;
-    margin: 0 0 18px;
-    font-size: clamp(34px, 6vw, 58px); line-height: 1.08; font-weight: 800; letter-spacing: -1px;
+    margin: 0 0 20px;
+    font-size: clamp(29px, 4.6vw, 56px); line-height: 1.06; font-weight: 800; letter-spacing: -1.2px;
+    overflow-wrap: break-word;
   }
-  h1 .grad {
-    background: linear-gradient(100deg, var(--session), var(--credits) 55%, var(--cost));
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
-  .lede {
-    position: relative;
-    margin: 0 auto 34px; max-width: 640px;
-    font-size: clamp(16px, 2.2vw, 19px); color: var(--muted);
-  }
-  .cta { position: relative; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  h1 em { font-style: normal; color: var(--session); }
+  .lede { margin: 0 0 30px; max-width: min(46ch, 100%); font-size: clamp(15.5px, 1.5vw, 17.5px); color: var(--muted); }
+  /* Grid and flex children default to min-content width, which lets long text
+     push past the viewport instead of wrapping. */
+  .hero-grid > *, .deck-col > * { min-width: 0; max-width: 100%; }
+  .lede strong { color: var(--text); font-weight: 600; }
+
+  .cta { display: flex; gap: 11px; flex-wrap: wrap; align-items: center; }
   .btn {
     display: inline-flex; align-items: center; gap: 9px;
-    padding: 13px 22px; border-radius: 12px;
-    font-weight: 700; font-size: 15px; text-decoration: none;
-    border: 1px solid transparent; transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    padding: 12px 20px; border-radius: 11px;
+    font-weight: 700; font-size: 14.5px; text-decoration: none;
+    border: 1px solid transparent; transition: transform .14s ease, background .14s ease, border-color .14s ease;
   }
   .btn:hover { transform: translateY(-2px); }
-  .btn-primary { background: var(--text); color: #0b0b0e; }
+  .btn-primary { background: var(--text); color: #08080a; }
   .btn-primary:hover { background: #fff; }
-  .btn-ghost { border-color: var(--line); color: var(--text); background: rgba(255,255,255,.02); }
-  .btn-ghost:hover { border-color: #3a3a48; background: rgba(255,255,255,.05); }
-  .count {
-    font-variant-numeric: tabular-nums;
-    padding-left: 9px; margin-left: 3px;
-    border-left: 1px solid var(--line); color: var(--muted);
-  }
+  .btn-ghost { border-color: var(--line); background: rgba(255,255,255,.025); }
+  .btn-ghost:hover { border-color: #39394a; background: rgba(255,255,255,.055); }
+  .count { font-variant-numeric: tabular-nums; padding-left: 9px; margin-left: 2px; border-left: 1px solid var(--line); color: var(--muted); }
 
-  /* Key strip --------------------------------------------------------- */
-  .keys {
-    display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
-    margin: 54px 0 8px;
-  }
-  .keys img {
-    width: 104px; height: 104px; border-radius: 16px; display: block;
-    box-shadow: 0 12px 30px rgba(0,0,0,.55);
-    transition: transform .2s ease;
-  }
-  .keys img:hover { transform: translateY(-4px); }
-  .caption { text-align: center; color: var(--muted); font-size: 13px; margin-top: 16px; }
+  .facts { display: flex; gap: 18px; flex-wrap: wrap; margin: 26px 0 0; padding: 0; list-style: none; }
+  .facts li { font-family: var(--mono); font-size: 12.5px; color: var(--muted); }
+  .facts li::before { content: "▪"; color: var(--credits); margin-right: 7px; }
 
-  /* Sections ---------------------------------------------------------- */
-  section { padding: 60px 0; border-top: 1px solid var(--line); }
-  h2 { font-size: 13px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted); margin: 0 0 26px; font-weight: 700; }
-  h3 { margin: 0 0 6px; font-size: 17px; font-weight: 700; }
-  p { margin: 0 0 14px; }
-  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-  .card {
-    background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
-    border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px;
+  /* ── The deck ─────────────────────────────────────────────────────── */
+  .deck-col { display: flex; flex-direction: column; align-items: center; }
+  .deck {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px;
+    padding: 15px; border-radius: 20px;
+    background: linear-gradient(165deg, #26262f, #131318 55%, #0c0c10);
+    border: 1px solid #2e2e3a;
+    box-shadow: 0 30px 70px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.07);
   }
-  .card p { color: var(--muted); font-size: 14.5px; margin: 0; }
-  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 9px; vertical-align: middle; }
-  code, pre { font-family: "Cascadia Code", Consolas, "SF Mono", Menlo, monospace; }
-  code { background: rgba(255,255,255,.06); padding: 2px 6px; border-radius: 5px; font-size: .92em; }
+  .cell { width: 78px; height: 78px; border-radius: 11px; }
+  @media (max-width: 1040px) { .cell { width: 66px; height: 66px; } }
+  /* Five cells plus gaps and bezel have to clear a 360px viewport. */
+  @media (max-width: 560px) {
+    .cell { width: 52px; height: 52px; border-radius: 9px; }
+    .deck { gap: 7px; padding: 11px; }
+    button.cell svg { border-radius: 9px; }
+  }
+  .cell.blank {
+    background: linear-gradient(180deg, #17171e, #0e0e13);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+  }
+  button.cell {
+    padding: 0; border: 0; cursor: pointer; background: none;
+    outline-offset: 3px;
+    transition: transform .16s ease, filter .16s ease;
+  }
+  button.cell svg { display: block; width: 100%; height: 100%; border-radius: 11px; }
+  button.cell:hover, button.cell:focus-visible { transform: translateY(-3px); filter: brightness(1.12); }
+  button.cell[aria-pressed="true"] { transform: translateY(-3px); }
+  button.cell[aria-pressed="true"] svg { box-shadow: 0 0 0 2px var(--accent); }
+
+  .k-face { fill: url(#kface); }
+  .k-label { font-size: 21px; font-weight: 700; letter-spacing: .6px; }
+  .k-rule { opacity: .5; }
+  .k-num { font-size: 62px; font-weight: 700; fill: #fff; }
+  .k-pct { font-size: 31px; font-weight: 700; fill: var(--muted); }
+  .k-track { fill: var(--track); }
+  .k-foot { font-size: 19px; font-weight: 600; fill: var(--foot); }
+
+  .readout {
+    margin-top: 22px; width: 100%; max-width: 470px; min-height: 92px;
+    border: 1px solid var(--line); border-left: 3px solid var(--accent, var(--line));
+    border-radius: 12px; padding: 15px 18px;
+    background: rgba(255,255,255,.018);
+  }
+  .readout h3 { margin: 0 0 5px; font-size: 15px; font-weight: 700; }
+  .readout p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+  .readout .src { display: block; margin-top: 8px; font-family: var(--mono); font-size: 11.5px; color: #6f6f7d; }
+
+  /* ── Sections ─────────────────────────────────────────────────────── */
+  section { padding: 66px 0; border-top: 1px solid var(--line-soft); position: relative; z-index: 1; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 30px; }
+  .sec-head h2 { margin: 0; font-size: 25px; font-weight: 800; letter-spacing: -.5px; }
+  .sec-head span { font-family: var(--mono); font-size: 12px; color: #55555f; }
+
+  .two { display: grid; gap: 34px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .lane { border-left: 2px solid var(--line); padding-left: 20px; }
+  .lane.a { border-color: var(--session); }
+  .lane.b { border-color: var(--cost); }
+  .lane h3 { margin: 0 0 8px; font-size: 17px; }
+  .lane p { margin: 0 0 10px; color: var(--muted); font-size: 15px; }
+  .lane p:last-child { margin-bottom: 0; }
+
+  /* Install */
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .tab {
+    font-family: var(--mono); font-size: 12.5px; padding: 7px 13px; border-radius: 8px;
+    border: 1px solid var(--line); background: none; color: var(--muted); cursor: pointer;
+  }
+  .tab[aria-selected="true"] { color: var(--text); border-color: #3b3b4a; background: rgba(255,255,255,.05); }
+  .code { position: relative; }
   pre {
-    background: #0e0e13; border: 1px solid var(--line); border-radius: 14px;
-    padding: 18px 20px; overflow-x: auto; font-size: 13.5px; line-height: 1.7; margin: 0;
+    background: #0c0c10; border: 1px solid var(--line); border-radius: 13px;
+    padding: 18px 20px; overflow-x: auto; font-size: 13.5px; line-height: 1.75; margin: 0;
+    font-family: var(--mono);
   }
-  pre code { background: none; padding: 0; }
-  .muted { color: var(--muted); }
-  .comment { color: #5f5f6d; }
-  ul.plain { list-style: none; padding: 0; margin: 0; }
-  ul.plain li { padding-left: 26px; position: relative; margin-bottom: 12px; color: var(--muted); font-size: 14.5px; }
-  ul.plain li::before { content: "→"; position: absolute; left: 0; color: var(--credits); font-weight: 700; }
-  ul.plain strong { color: var(--text); font-weight: 600; }
+  .comment { color: #5b5b68; }
+  .copy {
+    position: absolute; top: 10px; right: 10px;
+    font-family: var(--mono); font-size: 11.5px; padding: 5px 10px; border-radius: 7px;
+    border: 1px solid var(--line); background: #14141a; color: var(--muted); cursor: pointer;
+  }
+  .copy:hover { color: var(--text); border-color: #3b3b4a; }
+  .after-code { margin: 15px 0 0; color: var(--muted); font-size: 14.5px; }
 
-  footer { border-top: 1px solid var(--line); padding: 34px 0 60px; color: var(--muted); font-size: 13.5px; text-align: center; }
-  footer a { color: var(--muted); }
+  /* Data */
+  .rows { display: grid; gap: 0; }
+  .row { display: grid; grid-template-columns: 190px 1fr; gap: 22px; padding: 17px 0; border-top: 1px solid var(--line-soft); }
+  .row:first-child { border-top: 0; }
+  .row dt { font-family: var(--mono); font-size: 12.5px; color: var(--credits); padding-top: 2px; }
+  .row dd { margin: 0; color: var(--muted); font-size: 15px; }
+  .row dd strong { color: var(--text); font-weight: 600; }
+
+  footer { border-top: 1px solid var(--line-soft); padding: 30px 0 56px; color: #6f6f7d; font-size: 13.5px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   footer a:hover { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 44px; }
+    .deck-col { align-items: flex-start; }
+    .deck { transform-origin: left top; }
+    .row { grid-template-columns: 1fr; gap: 5px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
 </style>
 </head>
 <body>
 
+<!-- One shared gradient for every key face. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="kface" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1e1e26"/><stop offset="1" stop-color="#101015"/>
+    </linearGradient>
+  </defs>
+</svg>
+
 <header class="hero">
-  <div class="wrap">
-    <span class="eyebrow">Stream Deck plugin</span>
-    <h1>Your Claude limits,<br><span class="grad">on a physical key</span></h1>
-    <p class="lede">
-      Stop opening a terminal to run <code>/usage</code>. Session window, weekly
-      limit, Fable window, usage credits, and what today's tokens would have cost
-      — glanceable, one refresh a minute.
-    </p>
-    <div class="cta">
-      <a class="btn btn-primary" href="https://github.com/karolpolikarp/claude-limits-streamdeck">
-        Get it on GitHub
-      </a>
-      <a class="btn btn-ghost" id="star" href="https://github.com/karolpolikarp/claude-limits-streamdeck/stargazers">
-        ★ Star<span class="count" id="stars">—</span>
-      </a>
+  <div class="wrap hero-grid">
+    <div>
+      <p class="kicker">Stream Deck plugin · <b>MIT</b> · one dependency</p>
+      <h1>Your Claude limits,<br>on a key you can <em>press</em>.</h1>
+      <p class="lede">
+        The 5-hour window, the weekly cap, the Fable budget, your credits, and
+        what today's tokens would have cost — <strong>without opening a terminal
+        to type <span class="mono">/usage</span></strong>.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/karolpolikarp/claude-limits-streamdeck">Get it on GitHub</a>
+        <a class="btn btn-ghost" href="https://github.com/karolpolikarp/claude-limits-streamdeck/stargazers">★ Star<span class="count" id="stars">—</span></a>
+      </div>
+      <ul class="facts">
+        <li>no telemetry</li>
+        <li>no API key</li>
+        <li>no build step</li>
+      </ul>
     </div>
 
-    <div class="keys">
-      <img src="key-session.svg" alt="Session key showing 43 percent used with 2h 35m left">
-      <img src="key-week.svg" alt="Week key showing 61 percent used">
-      <img src="key-fable.svg" alt="Fable key showing 12 percent used">
-      <img src="key-credits.svg" alt="Credits key showing 28 percent of the monthly cap spent">
-      <img src="key-cost.svg" alt="Cost today key showing 47 dollars 20 across 61.4M tokens">
+    <div class="deck-col">
+      <div class="deck" id="deck" role="group" aria-label="Stream Deck with the plugin's keys"></div>
+      <div class="readout" id="readout" aria-live="polite"></div>
     </div>
-    <p class="caption">Rendered by the plugin. Values above are synthetic.</p>
   </div>
 </header>
 
-<section>
+<section id="how">
   <div class="wrap">
-    <h2>Five keys</h2>
-    <div class="grid">
-      <div class="card">
-        <h3><span class="dot" style="background:var(--session)"></span>Session</h3>
-        <p>The rolling 5-hour window, with the time left until it resets.</p>
-      </div>
-      <div class="card">
-        <h3><span class="dot" style="background:var(--week)"></span>Week</h3>
-        <p>The weekly limit across all models, and when the week rolls over.</p>
-      </div>
-      <div class="card">
-        <h3><span class="dot" style="background:var(--fable)"></span>Fable</h3>
-        <p>The model-scoped weekly window, so the premium budget has its own dial.</p>
-      </div>
-      <div class="card">
-        <h3><span class="dot" style="background:var(--credits)"></span>Credits</h3>
-        <p>Usage-credit spend against the monthly cap, in your own currency.</p>
-      </div>
-      <div class="card">
-        <h3><span class="dot" style="background:var(--cost)"></span>Cost today</h3>
-        <p>What today's tokens would have cost at API list price — a proxy for how
-        hard the day has been, not an invoice.</p>
-      </div>
-      <div class="card">
-        <h3><span class="dot" style="background:#3ddc84"></span>Colour is the signal</h3>
-        <p>Green under 50%, amber under 75%, orange under 90%, red above. You read
-        the bar before you read the number.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <h2>How it works</h2>
-    <div class="grid">
-      <div class="card">
+    <div class="sec-head"><h2>Two sources, one minute apart</h2><span>// how it works</span></div>
+    <div class="two">
+      <div class="lane a">
         <h3>The four limit keys</h3>
         <p>One call a minute to Anthropic's usage endpoint, authenticated with the
-        token Claude&nbsp;Code already stores. No separate login, no API key to
-        paste. Expired tokens are refreshed and written back so both stay in sync.</p>
+        token Claude&nbsp;Code already stores. No separate login, no API key to paste.</p>
+        <p>An expired token is refreshed and written back, so Claude&nbsp;Code and the
+        plugin keep sharing one credential. A <span class="mono">429</span> is
+        respected: the plugin reads <span class="mono">retry-after</span>, retries
+        once, and mutes its own timer for that window instead of piling on.</p>
       </div>
-      <div class="card">
+      <div class="lane b">
         <h3>Cost today</h3>
         <p>Never touches the network. It reads your local Claude&nbsp;Code
-        transcripts, counts today's tokens per model, and prices them — including
-        the separate rates for cache writes and reads.</p>
+        transcripts, counts today's tokens per model, and prices them — with the
+        separate multipliers for 5-minute cache writes, 1-hour writes, and reads.</p>
+        <p>Files are read incrementally from the last byte offset, so a poll costs
+        about 40&nbsp;ms after the first scan of the day. The figure is notional:
+        on a subscription nothing is billed, it just tells you how hard the day has been.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section>
+<section id="install">
   <div class="wrap">
-    <h2>Install</h2>
-    <pre><code>git clone https://github.com/karolpolikarp/claude-limits-streamdeck.git
+    <div class="sec-head"><h2>Install</h2><span>// two minutes</span></div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-win" aria-selected="true" aria-controls="panel-win">Windows</button>
+      <button class="tab" role="tab" id="tab-mac" aria-selected="false" aria-controls="panel-mac">macOS</button>
+    </div>
+    <div class="code">
+      <button class="copy" id="copy">copy</button>
+      <pre id="panel-win" role="tabpanel" aria-labelledby="tab-win"><code>git clone https://github.com/karolpolikarp/claude-limits-streamdeck.git
 cd claude-limits-streamdeck
 npm install --prefix com.karolp.claudelimits.sdPlugin
 
-<span class="comment"># Windows — copies the plugin and restarts Stream Deck</span>
+<span class="comment"># copies the plugin and restarts Stream Deck</span>
 .\deploy.ps1</code></pre>
-    <p class="muted" style="margin-top:16px;font-size:14.5px">
+      <pre id="panel-mac" role="tabpanel" aria-labelledby="tab-mac" hidden><code>git clone https://github.com/karolpolikarp/claude-limits-streamdeck.git
+cd claude-limits-streamdeck
+npm install --prefix com.karolp.claudelimits.sdPlugin
+
+<span class="comment"># drop it in and restart Stream Deck</span>
+cp -R com.karolp.claudelimits.sdPlugin \
+  ~/Library/Application\ Support/com.elgato.StreamDeck/Plugins/</code></pre>
+    </div>
+    <p class="after-code">
       Then drag the keys from the <strong>Claude</strong> category onto your deck.
-      Needs Stream&nbsp;Deck&nbsp;6.5+ (it runs on the Node runtime the app ships
-      with) and Claude&nbsp;Code logged in. macOS install is a folder copy — see
-      the <a href="https://github.com/karolpolikarp/claude-limits-streamdeck#install">readme</a>.
+      Needs Stream&nbsp;Deck&nbsp;6.5+ — the plugin runs on the Node runtime the app
+      already ships with — and Claude&nbsp;Code logged in.
     </p>
   </div>
 </section>
 
-<section>
+<section id="data">
   <div class="wrap">
-    <h2>What it does with your data</h2>
-    <ul class="plain">
-      <li><strong>Two hosts, nothing else.</strong> Anthropic's API for usage, and
-      the token endpoint when a refresh is due. No telemetry, no third parties.</li>
-      <li><strong>Message content is never read.</strong> The cost scan takes token
-      counts and timestamps out of your transcripts and nothing else.</li>
-      <li><strong>Credentials stay put.</strong> The stored token is written back
-      only when it expires, atomically, keeping the previous file as a backup.</li>
-      <li><strong>Read the source.</strong> Six small files, MIT licensed, no build
-      step and one dependency.</li>
-    </ul>
+    <div class="sec-head"><h2>What it does with your data</h2><span>// it reads your credentials, so:</span></div>
+    <dl class="rows">
+      <div class="row">
+        <dt>network</dt>
+        <dd><strong>Two hosts, nothing else.</strong> Anthropic's API for usage, and the
+        token endpoint when a refresh is due. No telemetry, no analytics, no third parties.</dd>
+      </div>
+      <div class="row">
+        <dt>transcripts</dt>
+        <dd><strong>Message content is never read.</strong> The cost scan pulls token
+        counts and timestamps out of the JSONL and nothing else — and it never leaves your machine.</dd>
+      </div>
+      <div class="row">
+        <dt>credentials</dt>
+        <dd><strong>Written back only on expiry.</strong> The refreshed token is written
+        atomically, keeping the previous file as <span class="mono">.credentials.json.sdbak</span>.</dd>
+      </div>
+      <div class="row">
+        <dt>audit</dt>
+        <dd><strong>Six files under 400 lines.</strong> No build step, one dependency,
+        MIT licensed — <a href="https://github.com/karolpolikarp/claude-limits-streamdeck/tree/main/com.karolp.claudelimits.sdPlugin/bin">read it in a sitting</a>.</dd>
+      </div>
+    </dl>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <p>
-      MIT licensed ·
-      <a href="https://github.com/karolpolikarp/claude-limits-streamdeck">Source on GitHub</a> ·
-      <a href="https://github.com/karolpolikarp/claude-limits-streamdeck/issues">Report an issue</a>
-    </p>
-    <p style="margin:0">Not affiliated with Anthropic or Elgato.</p>
+    <span>MIT · not affiliated with Anthropic or Elgato</span>
+    <span>
+      <a href="https://github.com/karolpolikarp/claude-limits-streamdeck">source</a> ·
+      <a href="https://github.com/karolpolikarp/claude-limits-streamdeck/issues">issues</a>
+    </span>
   </div>
 </footer>
 
 <script>
-  // Live star count, unauthenticated. Silently leaves the dash on failure or
-  // when the anonymous rate limit is hit.
+(function () {
+  "use strict";
+
+  // Key model. `pct` drifts while the page is open so the deck reads as live
+  // rather than as a screenshot.
+  var KEYS = [
+    { id: "session", label: "SESSION", accent: "var(--session)", pct: 43, resetMin: 155,
+      title: "Session — the rolling 5 hours",
+      body: "The window that actually bites during a long working session. The bottom line is the time left until it resets.",
+      src: "five_hour.utilization" },
+    { id: "week", label: "WEEK", accent: "var(--week)", pct: 61, resetMin: 5760,
+      title: "Week — every model together",
+      body: "The weekly cap across all models, so you can see a heavy Monday coming for the rest of the week.",
+      src: "seven_day.utilization" },
+    { id: "fable", label: "FABLE", accent: "var(--fable)", pct: 12, resetMin: 5760,
+      title: "Fable — the premium budget",
+      body: "The model-scoped weekly window gets its own dial, because that is the one you ration.",
+      src: 'limits[] where scope.model.display_name = "Fable"' },
+    { id: "credits", label: "CREDITS", accent: "var(--credits)", pct: 28, foot: "31.40/112 €",
+      title: "Credits — spend against the cap",
+      body: "Usage-credit spend in your own currency. The caption greys out when credits are switched off, so the balance is still readable.",
+      src: "spend, falling back to extra_usage" },
+    { id: "cost", label: "COST TODAY", accent: "var(--cost)", stat: "$47.20", foot: "61.4M tok",
+      title: "Cost today — the notional bill",
+      body: "Today's tokens priced at API list rates, cache writes and reads counted separately. Nothing is billed on a subscription; it is a measure of effort.",
+      src: "~/.claude/projects/**/*.jsonl" }
+  ];
+
+  var BLANKS_BEFORE = 5, BLANKS_AFTER = 5;
+
+  function severity(pct) {
+    if (pct >= 90) return "#ff4d4f";
+    if (pct >= 75) return "#ff8a3d";
+    if (pct >= 50) return "#ffc14d";
+    return "#3ddc84";
+  }
+
+  function countdown(min) {
+    var h = Math.floor(min / 60), d = Math.floor(h / 24);
+    if (d >= 1) return d + "d " + (h % 24) + "h";
+    if (h >= 1) return h + "h " + (min % 60) + "m";
+    return min + "m";
+  }
+
+  // Mirrors bin/render.js: label 26, rule 32, value 88, bar 98, footer 132.
+  function keySvg(k) {
+    var isStat = !!k.stat;
+    // Sizes match what bin/render.js computes for "$47.20": the renderer fits
+    // text to a 132px content width glyph by glyph, and the currency symbol
+    // drops to 0.6x.
+    var value = isStat
+      ? '<text class="k-num" x="72" y="92" style="font-size:43px">' +
+        '<tspan style="font-size:26px;fill:var(--muted)">$</tspan>' + k.stat.slice(1) + '</text>'
+      : '<text class="k-num" x="72" y="88" id="num-' + k.id + '">0<tspan class="k-pct" dx="2">%</tspan></text>';
+    var bar = isStat ? '' :
+      '<rect class="k-track" x="22" y="98" width="100" height="10" rx="5"/>' +
+      '<rect id="bar-' + k.id + '" x="22" y="98" width="10" height="10" rx="5" fill="#3ddc84"/>';
+    return '<svg viewBox="0 0 144 144" aria-hidden="true">' +
+      '<rect class="k-face" width="144" height="144" rx="20"/>' +
+      '<g text-anchor="middle" font-family="Segoe UI, sans-serif">' +
+        '<rect class="k-rule" x="50" y="32" width="44" height="3" rx="1.5" fill="' + k.accent + '"/>' +
+        '<text class="k-label" x="72" y="26" fill="' + k.accent + '">' + k.label + '</text>' +
+        value + bar +
+        '<text class="k-foot" x="72" y="132" id="foot-' + k.id + '"></text>' +
+      '</g></svg>';
+  }
+
+  var deck = document.getElementById("deck");
+  var readout = document.getElementById("readout");
+  var html = "";
+  var i;
+  for (i = 0; i < BLANKS_BEFORE; i++) html += '<div class="cell blank"></div>';
+  for (i = 0; i < KEYS.length; i++) {
+    html += '<button class="cell" type="button" data-i="' + i + '" aria-pressed="false" ' +
+            'style="--accent:' + KEYS[i].accent + '" aria-label="' + KEYS[i].label + '">' +
+            keySvg(KEYS[i]) + '</button>';
+  }
+  for (i = 0; i < BLANKS_AFTER; i++) html += '<div class="cell blank"></div>';
+  deck.innerHTML = html;
+
+  function paint(k) {
+    var foot = document.getElementById("foot-" + k.id);
+    if (k.stat) { foot.textContent = k.foot; return; }
+    var num = document.getElementById("num-" + k.id);
+    var bar = document.getElementById("bar-" + k.id);
+    var pct = Math.round(k.pct);
+    num.firstChild.nodeValue = pct;
+    bar.setAttribute("width", Math.max(10, pct));
+    bar.setAttribute("fill", severity(pct));
+    foot.textContent = k.foot || countdown(k.resetMin);
+  }
+  KEYS.forEach(paint);
+
+  function select(i) {
+    var k = KEYS[i];
+    var buttons = deck.querySelectorAll("button.cell");
+    for (var j = 0; j < buttons.length; j++) {
+      buttons[j].setAttribute("aria-pressed", String(Number(buttons[j].dataset.i) === i));
+    }
+    readout.style.setProperty("--accent", k.accent);
+    readout.innerHTML = "<h3>" + k.title + "</h3><p>" + k.body +
+      '<span class="src">source: ' + k.src.replace(/</g, "&lt;") + "</span></p>";
+  }
+  deck.addEventListener("click", function (e) {
+    var btn = e.target.closest("button.cell");
+    if (btn) select(Number(btn.dataset.i));
+  });
+  deck.addEventListener("mouseover", function (e) {
+    var btn = e.target.closest("button.cell");
+    if (btn) select(Number(btn.dataset.i));
+  });
+  select(0);
+
+  // Gentle drift so the deck looks alive. Skipped when the visitor asked for
+  // reduced motion or the tab is hidden.
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduced) {
+    setInterval(function () {
+      if (document.hidden) return;
+      KEYS.forEach(function (k) {
+        if (k.stat) return;
+        k.pct += k.id === "session" ? 0.7 : 0.12;
+        if (k.pct > 99) k.pct = k.id === "session" ? 4 : 8;
+        if (k.resetMin) k.resetMin = Math.max(1, k.resetMin - (k.id === "session" ? 2 : 6));
+        paint(k);
+      });
+    }, 1800);
+  }
+
+  // Install tabs.
+  var tabs = { win: document.getElementById("tab-win"), mac: document.getElementById("tab-mac") };
+  var panels = { win: document.getElementById("panel-win"), mac: document.getElementById("panel-mac") };
+  Object.keys(tabs).forEach(function (os) {
+    tabs[os].addEventListener("click", function () {
+      Object.keys(tabs).forEach(function (other) {
+        tabs[other].setAttribute("aria-selected", String(other === os));
+        panels[other].hidden = other !== os;
+      });
+    });
+  });
+  if (/Mac|iPhone|iPad/.test(navigator.platform || "")) tabs.mac.click();
+
+  document.getElementById("copy").addEventListener("click", function () {
+    var visible = panels.win.hidden ? panels.mac : panels.win;
+    var btn = this;
+    navigator.clipboard.writeText(visible.innerText.trim()).then(function () {
+      btn.textContent = "copied";
+      setTimeout(function () { btn.textContent = "copy"; }, 1600);
+    }, function () { btn.textContent = "press ctrl+c"; });
+  });
+
+  // Live star count, unauthenticated; leaves the dash on failure.
   fetch("https://api.github.com/repos/karolpolikarp/claude-limits-streamdeck")
     .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
     .then(function (d) {
@@ -273,6 +506,7 @@ npm install --prefix com.karolp.claudelimits.sdPlugin
       }
     })
     .catch(function () {});
+})();
 </script>
 
 </body>
