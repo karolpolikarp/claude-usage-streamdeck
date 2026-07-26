@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claude Limits — live Claude usage on your Stream Deck</title>
+<title>Claude Usage — live Claude limits on your Stream Deck</title>
 <meta name="description" content="A Stream Deck plugin that puts your Claude session, weekly and Fable limits, usage credits, and today's token cost on physical keys.">
 <link rel="icon" href="key-session.svg">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="Claude Limits — live Claude usage on your Stream Deck">
+<meta property="og:title" content="Claude Usage — live Claude limits on your Stream Deck">
 <meta property="og:description" content="Session, weekly and Fable limits, usage credits, and today's token cost — on physical keys.">
-<meta property="og:url" content="https://karolwilczynski.com/claude-limits-streamdeck/">
-<meta property="og:image" content="https://karolwilczynski.com/claude-limits-streamdeck/keys.png">
+<meta property="og:url" content="https://karolwilczynski.com/claude-usage-streamdeck/">
+<meta property="og:image" content="https://karolwilczynski.com/claude-usage-streamdeck/keys.png">
 <meta name="twitter:card" content="summary_large_image">
 
 <style>
@@ -251,8 +251,8 @@
         minute</strong>, so you never&nbsp;type <span class="mono">/usage</span>&nbsp;again.
       </p>
       <div class="cta">
-        <a class="btn btn-primary" href="https://github.com/karolpolikarp/claude-limits-streamdeck">Get it on GitHub</a>
-        <a class="btn btn-ghost" href="https://github.com/karolpolikarp/claude-limits-streamdeck/stargazers">★ Star<span class="count" id="stars">—</span></a>
+        <a class="btn btn-primary" href="https://github.com/karolpolikarp/claude-usage-streamdeck">Get it on GitHub</a>
+        <a class="btn btn-ghost" href="https://github.com/karolpolikarp/claude-usage-streamdeck/stargazers">★ Star<span class="count" id="stars">—</span></a>
       </div>
       <ul class="facts">
         <li>no telemetry</li>
@@ -303,14 +303,14 @@
     </div>
     <div class="code">
       <button class="copy" id="copy">copy</button>
-      <pre id="panel-win" role="tabpanel" aria-labelledby="tab-win"><code>git clone https://github.com/karolpolikarp/claude-limits-streamdeck.git
-cd claude-limits-streamdeck
+      <pre id="panel-win" role="tabpanel" aria-labelledby="tab-win"><code>git clone https://github.com/karolpolikarp/claude-usage-streamdeck.git
+cd claude-usage-streamdeck
 npm install --prefix com.karolp.claudelimits.sdPlugin
 
 <span class="comment"># copies the plugin and restarts Stream Deck</span>
 .\deploy.ps1</code></pre>
-      <pre id="panel-mac" role="tabpanel" aria-labelledby="tab-mac" hidden><code>git clone https://github.com/karolpolikarp/claude-limits-streamdeck.git
-cd claude-limits-streamdeck
+      <pre id="panel-mac" role="tabpanel" aria-labelledby="tab-mac" hidden><code>git clone https://github.com/karolpolikarp/claude-usage-streamdeck.git
+cd claude-usage-streamdeck
 npm install --prefix com.karolp.claudelimits.sdPlugin
 
 <span class="comment"># drop it in and restart Stream Deck</span>
@@ -347,7 +347,7 @@ cp -R com.karolp.claudelimits.sdPlugin \
       <div class="row">
         <dt>audit</dt>
         <dd><strong>Six files under 400 lines.</strong> No build step, one dependency,
-        MIT licensed — <a href="https://github.com/karolpolikarp/claude-limits-streamdeck/tree/main/com.karolp.claudelimits.sdPlugin/bin">read it in a sitting</a>.</dd>
+        MIT licensed — <a href="https://github.com/karolpolikarp/claude-usage-streamdeck/tree/main/com.karolp.claudelimits.sdPlugin/bin">read it in a sitting</a>.</dd>
       </div>
     </dl>
   </div>
@@ -357,8 +357,8 @@ cp -R com.karolp.claudelimits.sdPlugin \
   <div class="wrap">
     <span>MIT · not affiliated with Anthropic or Elgato</span>
     <span>
-      <a href="https://github.com/karolpolikarp/claude-limits-streamdeck">source</a> ·
-      <a href="https://github.com/karolpolikarp/claude-limits-streamdeck/issues">issues</a>
+      <a href="https://github.com/karolpolikarp/claude-usage-streamdeck">source</a> ·
+      <a href="https://github.com/karolpolikarp/claude-usage-streamdeck/issues">issues</a>
     </span>
   </div>
 </footer>
@@ -516,7 +516,7 @@ cp -R com.karolp.claudelimits.sdPlugin \
   });
 
   // Live star count, unauthenticated; leaves the dash on failure.
-  fetch("https://api.github.com/repos/karolpolikarp/claude-limits-streamdeck")
+  fetch("https://api.github.com/repos/karolpolikarp/claude-usage-streamdeck")
     .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
     .then(function (d) {
       if (typeof d.stargazers_count === "number") {

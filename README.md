@@ -1,6 +1,6 @@
 <div align="center">
 
-# Claude Limits
+# Claude Usage
 
 ### Stop guessing how much Claude you have left.
 
@@ -8,7 +8,7 @@ Session window, weekly cap, Fable budget, usage credits, and what today's tokens
 would have cost — on five Stream Deck keys, refreshed every minute.
 
 [![License](https://img.shields.io/badge/license-MIT-8ab4ff?style=flat-square)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/karolpolikarp/claude-limits-streamdeck?style=flat-square&color=5fd4c4)](https://github.com/karolpolikarp/claude-limits-streamdeck/stargazers)
+[![Stars](https://img.shields.io/github/stars/karolpolikarp/claude-usage-streamdeck?style=flat-square&color=5fd4c4)](https://github.com/karolpolikarp/claude-usage-streamdeck/stargazers)
 ![Stream Deck](https://img.shields.io/badge/Stream%20Deck-6.5%2B-c08cff?style=flat-square)
 ![Dependencies](https://img.shields.io/badge/dependencies-1-f2c14e?style=flat-square)
 
@@ -16,7 +16,7 @@ would have cost — on five Stream Deck keys, refreshed every minute.
 
 <sub>Values are synthetic — the plugin renders your own.</sub>
 
-**[Website](https://karolwilczynski.com/claude-limits-streamdeck/)** ·
+**[Website](https://karolwilczynski.com/claude-usage-streamdeck/)** ·
 [Install](#install) ·
 [How it works](#how-it-works) ·
 [Your data](#what-it-does-with-your-data)
@@ -79,8 +79,8 @@ logged in**. Node.js is only used to install the one dependency and run the dev
 tools.
 
 ```bash
-git clone https://github.com/karolpolikarp/claude-limits-streamdeck.git
-cd claude-limits-streamdeck
+git clone https://github.com/karolpolikarp/claude-usage-streamdeck.git
+cd claude-usage-streamdeck
 npm install --prefix com.karolp.claudelimits.sdPlugin
 ```
 
