@@ -8,17 +8,21 @@ const SIZE = 144;
 const CENTER_X = SIZE / 2;
 const CONTENT_WIDTH = 132;
 
-const LABEL_Y = 27;
-const RULE_Y = 34;
-const VALUE_Y = 96;
-const BAR_Y = 108;
-const BAR_H = 12;
-const BAR_W = 104;
-const FOOTER_Y = 136;
+// Vertical budget for the 144px face. The bar and the footer used to sit two
+// pixels apart, which read as a collision on the device and left the footer
+// hard to pick out; both were pulled apart and the footer brightened.
+const LABEL_Y = 26;
+const RULE_Y = 32;
+const VALUE_Y = 88;
+const BAR_Y = 98;
+const BAR_H = 10;
+const BAR_W = 100;
+const FOOTER_Y = 132;
 
 const COLORS = {
 	track: '#31313c',
 	muted: '#8a8a96',
+	footer: '#c6c6d2',
 	text: '#ffffff',
 	ok: '#3ddc84',
 	warn: '#ffc14d',
@@ -119,8 +123,8 @@ function labelNode(text, color) {
 
 function footerNode(text) {
 	if (!text) return '';
-	const size = fitSize(text, 20, 13);
-	return `<text x="${CENTER_X}" y="${FOOTER_Y}" font-size="${size}" font-weight="600" fill="${COLORS.muted}">${escapeXml(text)}</text>`;
+	const size = fitSize(text, 19, 13);
+	return `<text x="${CENTER_X}" y="${FOOTER_Y}" font-size="${size}" font-weight="600" fill="${COLORS.footer}">${escapeXml(text)}</text>`;
 }
 
 function barNode(percent, color) {
