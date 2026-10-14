@@ -132,13 +132,17 @@ and prices `message.usage` against the rates in [`bin/pricing.js`](com.karolp.cl
 
 | Model | Input $/MTok | Output $/MTok |
 | --- | ---: | ---: |
-| `claude-fable-5` | 10 | 50 |
+| `claude-fable-5-1`, `claude-fable-5` | 10 | 50 |
 | `claude-opus-5`, `claude-opus-4-8`, `claude-opus-4-7` | 5 | 25 |
-| `claude-sonnet-5`, `claude-sonnet-4-6` | 3 | 15 |
+| `claude-opus-5-5` | 4 | 20 |
+| `claude-sonnet-4-6` | 3 | 15 |
+| `claude-sonnet-5-5`, `claude-sonnet-5` | 2 | 10 |
 | `claude-haiku-4-5` | 1 | 5 |
+| `claude-haiku-5-5` (prompt ≤ 100K / above) | 0.10 / 0.50 | 0.50 / 2.50 |
 
 Cache tokens are priced off the input rate: 5-minute write ×1.25, 1-hour write
-×2, read ×0.1. `cache_creation.ephemeral_5m_input_tokens` and
+×2, read ×0.1 — except where a model has its own cache-read rate
+(`claude-fable-5-1` $0.25, `claude-opus-5-5` $0.20). `cache_creation.ephemeral_5m_input_tokens` and
 `ephemeral_1h_input_tokens` are counted separately. A model with no rate entry
 contributes nothing and is counted in `unpricedRequests`.
 
