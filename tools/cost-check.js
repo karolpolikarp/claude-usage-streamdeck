@@ -17,8 +17,11 @@ const fmtTokens = (t) =>
 console.log(`cold scan   ${t1 - t0} ms, ${first.filesScanned} files, ${(first.bytesRead / 1e6).toFixed(1)} MB`);
 console.log(`incremental ${t2 - t1} ms, ${(second.bytesRead / 1e3).toFixed(1)} kB`);
 console.log('');
+console.log(`projects    ${first.projectsDir}${first.projectsDirMissing ? '  (MISSING)' : ''}`);
 console.log(`cost today  $${first.usd.toFixed(2)}`);
-console.log(`requests    ${first.requests} (${first.unpricedRequests} unpriced)`);
+console.log(
+	`requests    ${first.requests} (billable ${first.billableRequests}, synthetic ${first.syntheticRequests}, unpriced ${first.unpricedRequests})`
+);
 console.log(`sessions    ${first.sessions}`);
 console.log(`tokens      ${first.totalTokens} (${fmtTokens(first.tokens)})`);
 console.log('');

@@ -132,6 +132,23 @@ function drawCostKey(context, action) {
 		return;
 	}
 
+	// A scan that found nothing must not look like a scan that added up to zero,
+	// so the two states below draw the empty face rather than "$0.00".
+	if (lastCost.projectsDirMissing) {
+		setImage(
+			context,
+			renderStat({ label: action.label, kind: action.kind, error: 'no data dir' })
+		);
+		return;
+	}
+	if (lastCost.requests === 0) {
+		setImage(
+			context,
+			renderStat({ label: action.label, kind: action.kind, value: null, footer: 'no usage yet' })
+		);
+		return;
+	}
+
 	// Cents stop being interesting past $100, and dropping them buys a much
 	// larger face on the key.
 	const usd = lastCost.usd;
@@ -144,8 +161,13 @@ function drawCostKey(context, action) {
 			kind: action.kind,
 			value,
 			// Kept to one short phrase — anything longer has to shrink to stay
-			// inside the key and stops being readable on the device.
-			footer: `${compactTokens(lastCost.totalTokens)} tok`
+			// inside the key and stops being readable on the device. Traffic on a
+			// model the rate table does not know contributes nothing to the total,
+			// so say so instead of showing a figure that is quietly too low.
+			footer:
+				lastCost.unpricedRequests > 0
+					? `${lastCost.unpricedRequests} unpriced`
+					: `${compactTokens(lastCost.totalTokens)} tok`
 		})
 	);
 }
@@ -229,7 +251,10 @@ async function runPoll(reason) {
 			lastCost = collectToday();
 			lastCostError = null;
 			log.info(
-				`poll(${reason}) cost ok $${lastCost.usd.toFixed(2)} req=${lastCost.requests} files=${lastCost.filesScanned}`
+				`poll(${reason}) cost ok $${lastCost.usd.toFixed(2)} req=${lastCost.requests}` +
+					` (billable=${lastCost.billableRequests} synthetic=${lastCost.syntheticRequests}` +
+					` unpriced=${lastCost.unpricedRequests})` +
+					` files=${lastCost.filesScanned}${lastCost.projectsDirMissing ? ' NO-DIR ' + lastCost.projectsDir : ''}`
 			);
 		} catch (err) {
 			lastCostError = err;

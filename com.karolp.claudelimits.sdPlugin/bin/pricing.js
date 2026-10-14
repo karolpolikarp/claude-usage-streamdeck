@@ -43,7 +43,7 @@ function costOf(model, tokens) {
 	const id = normalizeModel(model);
 	const rate = RATES[id];
 	if (!rate) {
-		if (id && !unknownModels.has(id)) unknownModels.add(id);
+		if (id && !isSynthetic(model)) unknownModels.add(id);
 		return 0;
 	}
 	const usd =
@@ -59,4 +59,14 @@ function knownModel(model) {
 	return Boolean(RATES[normalizeModel(model)]);
 }
 
-module.exports = { costOf, normalizeModel, knownModel, unknownModels, RATES };
+/**
+ * Transcripts also carry pseudo-entries such as `<synthetic>` for turns that
+ * never reached the API — a local error, an interrupted request. Zero is the
+ * right cost for those, so they must not be reported as unpriced traffic.
+ */
+function isSynthetic(model) {
+	if (!model) return true;
+	return !/^claude-/.test(normalizeModel(model));
+}
+
+module.exports = { costOf, normalizeModel, knownModel, isSynthetic, unknownModels, RATES };

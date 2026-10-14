@@ -218,7 +218,9 @@ function renderStat(opts) {
 	const value = opts.value === null || opts.value === undefined ? '--' : String(opts.value);
 	const size = fitSize(value, 56, 26);
 	// A leading currency symbol reads better a size down and in the muted tone.
-	const split = /^([^\d.]+)(.+)$/.exec(value);
+	// The remainder has to start on a digit: without that, the placeholder "--"
+	// splits into a small dash and a large one.
+	const split = /^([^\d.]+)([\d.].*)$/.exec(value);
 	const body = split
 		? `<tspan font-size="${Math.round(size * 0.6)}" fill="${COLORS.muted}">${escapeXml(split[1])}</tspan>${escapeXml(split[2])}`
 		: escapeXml(value);
