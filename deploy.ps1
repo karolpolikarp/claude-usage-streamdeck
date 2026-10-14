@@ -43,8 +43,8 @@ if (-not $NoRestart) {
 }
 
 Write-Host "Copying to $target"
-# /MIR keeps the target identical to the source; the log file is plugin-generated.
-robocopy $source $target /MIR /NFL /NDL /NJH /NJS /NP /XF plugin.log | Out-Null
+# /MIR keeps the target identical to the source; the log and usage cache are plugin-generated.
+robocopy $source $target /MIR /NFL /NDL /NJH /NJS /NP /XF plugin.log usage-cache.json | Out-Null
 if ($LASTEXITCODE -ge 8) { throw "robocopy failed with exit code $LASTEXITCODE" }
 
 if (-not $NoRestart) {

@@ -1,5 +1,7 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const WebSocket = require('ws');
 const log = require('./log');
 const { getUsage, extractMetrics } = require('./usage');
@@ -7,8 +9,15 @@ const { collectToday } = require('./cost');
 const { renderKey, renderStat } = require('./render');
 
 const POLL_INTERVAL_MS = 60 * 1000;
+// The usage endpoint answers 429 to every other request at a one-minute
+// cadence, so it is asked half as often as the local cost scan runs.
+const USAGE_INTERVAL_MS = 2 * 60 * 1000;
 const REDRAW_INTERVAL_MS = 30 * 1000; // keeps the countdown moving between polls
 const STALE_AFTER_MS = 5 * 60 * 1000;
+
+// Last good usage payload, so a restart that lands in a rate-limit window
+// shows the previous figures (greyed as stale) instead of four error keys.
+const CACHE_PATH = path.join(__dirname, '..', 'usage-cache.json');
 
 // `source` decides which poller feeds the key: the usage API or the local
 // transcript scan.
@@ -28,6 +37,7 @@ const visible = new Map();
 let ws = null;
 let lastMetrics = null;
 let lastFetchAt = 0;
+let lastUsageAttemptAt = 0;
 let lastError = null;
 let lastCost = null;
 let lastCostError = null;
@@ -203,7 +213,7 @@ let backoffUntil = 0;
  */
 function scheduleRetry(err) {
 	if (!err || !err.retryAfterMs) return;
-	const delay = Math.min(Math.max(err.retryAfterMs, 5000), 5 * 60 * 1000);
+	const delay = Math.min(Math.max(err.retryAfterMs, USAGE_INTERVAL_MS), 5 * 60 * 1000);
 	backoffUntil = Date.now() + delay;
 	if (retryTimer) return;
 	log.info(`rate limited, retrying usage in ${Math.round(delay / 1000)}s`);
@@ -228,14 +238,45 @@ function poll(reason) {
 	return pendingPoll;
 }
 
+function loadCachedMetrics() {
+	try {
+		const cached = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf8'));
+		if (!cached || !cached.metrics || !cached.fetchedAt) return;
+		lastMetrics = cached.metrics;
+		lastFetchAt = cached.fetchedAt;
+		log.info(`usage cache loaded from ${new Date(cached.fetchedAt).toISOString()}`);
+	} catch (err) {
+		if (err.code !== 'ENOENT') log.warn('usage cache unreadable: ' + err.message);
+	}
+}
+
+function saveCachedMetrics() {
+	try {
+		fs.writeFileSync(CACHE_PATH, JSON.stringify({ fetchedAt: lastFetchAt, metrics: lastMetrics }));
+	} catch (err) {
+		log.warn('usage cache write failed: ' + err.message);
+	}
+}
+
+/**
+ * Timer and appear polls ask for usage at most once per USAGE_INTERVAL_MS; the
+ * small slack keeps setInterval drift from skipping a whole extra tick.
+ */
+function usageDue(reason) {
+	if (reason !== 'timer' && reason !== 'appear') return true;
+	return Date.now() - lastUsageAttemptAt >= USAGE_INTERVAL_MS - 5000;
+}
+
 async function runPoll(reason) {
-	if (needsSource('usage')) {
+	if (needsSource('usage') && usageDue(reason)) {
+		lastUsageAttemptAt = Date.now();
 		try {
 			const data = await getUsage();
 			lastMetrics = extractMetrics(data);
 			lastFetchAt = Date.now();
 			lastError = null;
 			backoffUntil = 0;
+			saveCachedMetrics();
 			log.info(
 				`poll(${reason}) usage ok session=${fmt(lastMetrics.session)} week=${fmt(lastMetrics.week)} fable=${fmt(lastMetrics.fable)} credits=${fmt(lastMetrics.credits)}`
 			);
@@ -363,4 +404,5 @@ function connect() {
 process.on('uncaughtException', (err) => log.error('uncaught: ' + (err && err.stack)));
 process.on('unhandledRejection', (err) => log.error('unhandled: ' + err));
 
+loadCachedMetrics();
 connect();
