@@ -5,7 +5,7 @@ const os = require('os');
 const path = require('path');
 
 const log = require('./log');
-const { costOf, normalizeModel, knownModel } = require('./pricing');
+const { costOf, normalizeModel, knownModel, isSynthetic } = require('./pricing');
 
 const PROJECTS_DIR =
 	process.env.CLAUDE_PROJECTS_DIR || path.join(os.homedir(), '.claude', 'projects');
@@ -39,6 +39,19 @@ function reset(day) {
 	state.day = day;
 	state.files.clear();
 	state.entries.clear();
+}
+
+/**
+ * `walk` swallows a failed readdir, so a wrong or missing projects directory
+ * would otherwise be indistinguishable from a day with no usage — both come
+ * back as zero files and $0.00.
+ */
+function projectsDirExists() {
+	try {
+		return fs.statSync(PROJECTS_DIR).isDirectory();
+	} catch (err) {
+		return false;
+	}
 }
 
 function listCandidateFiles(sinceMs) {
@@ -148,11 +161,37 @@ function addTokens(target, tokens) {
  * On a Max subscription nothing is actually billed — this is what the same
  * traffic would have cost at list price.
  */
+function emptyResult(extra) {
+	return Object.assign(
+		{
+			usd: 0,
+			tokens: emptyTokens(),
+			totalTokens: 0,
+			requests: 0,
+			billableRequests: 0,
+			syntheticRequests: 0,
+			unpricedRequests: 0,
+			sessions: 0,
+			byModel: {},
+			filesScanned: 0,
+			bytesRead: 0,
+			projectsDir: PROJECTS_DIR,
+			projectsDirMissing: false
+		},
+		extra
+	);
+}
+
 function collectToday() {
 	const day = localDayKey();
 	if (state.day !== day) {
 		log.info(`cost: new day ${day}, resetting scan state`);
 		reset(day);
+	}
+
+	if (!projectsDirExists()) {
+		reset(day);
+		return emptyResult({ projectsDirMissing: true });
 	}
 
 	const dayStartMs = startOfLocalDay();
@@ -172,6 +211,8 @@ function collectToday() {
 	const sessions = new Set();
 	const total = emptyTokens();
 	let usd = 0;
+	let billableRequests = 0;
+	let syntheticRequests = 0;
 	let unpricedRequests = 0;
 
 	for (const entry of state.entries.values()) {
@@ -180,22 +221,28 @@ function collectToday() {
 		addTokens(byModel.get(model), entry.tokens);
 		addTokens(total, entry.tokens);
 		usd += costOf(entry.model, entry.tokens);
-		if (!knownModel(entry.model)) unpricedRequests++;
+		// A real model missing from the rate table silently costs nothing, which
+		// is worth flagging; a `<synthetic>` entry costing nothing is not.
+		if (isSynthetic(entry.model)) syntheticRequests++;
+		else if (!knownModel(entry.model)) unpricedRequests++;
+		else billableRequests++;
 		if (entry.sessionId) sessions.add(entry.sessionId);
 	}
 
-	return {
+	return emptyResult({
 		usd,
 		tokens: total,
 		totalTokens:
 			total.input + total.output + total.cacheRead + total.cacheWrite5m + total.cacheWrite1h,
 		requests: state.entries.size,
+		billableRequests,
+		syntheticRequests,
 		unpricedRequests,
 		sessions: sessions.size,
 		byModel: Object.fromEntries([...byModel].map(([m, t]) => [m, t])),
 		filesScanned: files.length,
 		bytesRead
-	};
+	});
 }
 
 module.exports = { collectToday, PROJECTS_DIR };

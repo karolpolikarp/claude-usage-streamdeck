@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { getUsage, extractMetrics } = require('../com.karolp.claudelimits.sdPlugin/bin/usage');
-const { renderKey } = require('../com.karolp.claudelimits.sdPlugin/bin/render');
+const { renderKey, renderStat } = require('../com.karolp.claudelimits.sdPlugin/bin/render');
 
 const OUT_DIR = process.env.PREVIEW_DIR || path.join(__dirname, '..', 'preview');
 const KINDS = [
@@ -34,6 +34,18 @@ function writeSvg(name, dataUri) {
 			{ kind: 'session', label: 'SESSION', error: 'no login' }
 		];
 		demo.forEach((d, i) => writeSvg(`demo-${i}-${d.kind}`, renderKey(d)));
+
+		// The cost key has no percentage, so it goes through renderStat and needs
+		// its own set: a normal total, a day with nothing scanned yet, and traffic
+		// on a model the rate table does not price.
+		const costDemo = [
+			{ name: 'cost', label: 'COST TODAY', kind: 'cost', value: '$12.34', footer: '289k tok' },
+			{ name: 'cost-empty', label: 'COST TODAY', kind: 'cost', value: null, footer: 'no usage yet' },
+			{ name: 'cost-unpriced', label: 'COST TODAY', kind: 'cost', value: '$1.04', footer: '3 unpriced' },
+			{ name: 'cost-no-dir', label: 'COST TODAY', kind: 'cost', error: 'no data dir' }
+		];
+		costDemo.forEach((d) => writeSvg(`demo-${d.name}`, renderStat(d)));
+
 		console.log('wrote demo previews to', OUT_DIR);
 		return;
 	}
